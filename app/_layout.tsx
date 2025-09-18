@@ -9,14 +9,22 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
+const screens: Array<{ name: string; options: any }> = [
+  { name: '(tabs)', options: { headerShown: false } },        
+  { name: '(auth)/login', options: { title: 'Login', headerShown: false } },
+  { name: '(auth)/signup', options: { title: 'Sign Up', headerShown: false } },
+  { name: 'modal', options: { title: 'Modal', presentation: 'modal' } },
+];
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        {screens.map((screen) => (
+          <Stack.Screen key={screen.name} {...screen} />
+        ))}
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
