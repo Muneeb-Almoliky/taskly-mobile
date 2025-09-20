@@ -1,4 +1,7 @@
+import { Platform } from 'react-native';
 import api, { setAccessToken, clearAccessToken } from './api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from "expo-secure-store"
 
 interface LoginPayload {
   email: string;
@@ -56,4 +59,20 @@ export async function logout() {
 
   // Clear access token from SecureStore
   await clearAccessToken();
+}
+
+
+export async function storeEmail(email: string) {
+  if (Platform.OS === 'web') {
+    await AsyncStorage.setItem('email', email);
+    return;
+  }
+  await SecureStore.setItemAsync('email', email);
+}
+
+export async function getEmail() {
+  if (Platform.OS === 'web') {
+    return await AsyncStorage.getItem('email');
+  }
+  return await SecureStore.getItemAsync('email');
 }

@@ -7,6 +7,7 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, Animated, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { login } from "../../services/authService";
+import { storeEmail } from "../../services/authService";
 
 export default function LoginScreen() {
     const router = useRouter();
@@ -45,7 +46,8 @@ export default function LoginScreen() {
         try {
             const data: any = await login({email, password});
             console.log(data);
-            router.replace("/");
+            storeEmail(email);
+            router.replace("/tasks");
         } catch (error) {
             Alert.alert("Error", "Login failed. Please check your credentials.");
         } finally {
