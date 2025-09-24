@@ -20,26 +20,34 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="tasks"
-        options={{
           title: 'Tasks',
           tabBarIcon: ({ color }) => (
             <Ionicons name="checkmark-circle" size={28} color={color} />
           ),
         }}
       />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="person-circle" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+      name="archived"
+      options={{
+        title: 'Archived',
+        tabBarIcon: ({ color }) => <Ionicons size={28} name="archive" color={color} />,
+      }}
+    />
+      <Tabs.Screen
+      name="add-task"
+      options={{
+        title: 'Add Task',
+        tabBarIcon: ({ color }) => <Ionicons size={28} name="add-circle" color={color} />,
+      }}
+    />
     </Tabs>
+    
   );
 }
