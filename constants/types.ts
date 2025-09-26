@@ -7,6 +7,7 @@ export interface Task{
     starred_status: boolean;
     completion_status: boolean;
     archived_status: boolean;
+    due_date?: Date | null;
 }
 
 export enum TaskStatus {
@@ -15,6 +16,7 @@ export enum TaskStatus {
     COMPLETED = "completed",
     ARCHIVED = "archived",
     STARRED = "starred",
+    OVERDUE = "overdue",
 }
 
 export type CreateTaskData = {
@@ -22,8 +24,10 @@ export type CreateTaskData = {
     date: string;
     completionStatus: boolean;
     starredStatus: boolean;
+    dueDate?: Date | null;
 };
 
 export type UpdateTaskData = {
     title?: string;
+    dueDate?: Date | null;
 };

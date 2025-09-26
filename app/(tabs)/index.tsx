@@ -405,19 +405,15 @@ export default function Tasks() {
         </Animated.View>
 
         {/* Add Task Button */}
-        <Animated.View 
-          style={[
-            styles.addButtonContainer, 
-            { transform: [{ rotate: addButtonInterpolate }] }
-          ]}
-        >
+        <View style={styles.addButtonContainer}>
           <TouchableOpacity 
             style={[styles.addButton, { backgroundColor: tintColor }]}
-            onPress={isAddingTask ? handleAddTask : toggleAddTask}
+            onPress={() => router.push('/add-task')} // navigate to Add Task Screen
           >
-            <Ionicons name={isAddingTask ? "checkmark" : "add"} size={28} color="#fff" />
+            <Ionicons name="add" size={28} color="#fff" />
           </TouchableOpacity>
-        </Animated.View>
+        </View>
+
       </View>
     </View>
   );
