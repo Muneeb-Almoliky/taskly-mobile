@@ -47,7 +47,7 @@ export default function LoginScreen() {
             const data: any = await login({email, password});
             console.log(data);
             storeEmail(email);
-            router.replace("/tasks");
+            router.replace("/");
         } catch (error) {
             Alert.alert("Error", "Login failed. Please check your credentials.");
         } finally {

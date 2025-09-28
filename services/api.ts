@@ -58,23 +58,41 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 || error.response?.status === 403 && !originalRequest._retry) {
+    // Check if we should attempt refresh
+    if ((error.response?.status === 401 || error.response?.status === 403) && 
+        !originalRequest._retry && 
+        !originalRequest._isRefreshRequest) {
+      
       originalRequest._retry = true;
+      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
+
+      // Limit retries
+      if (originalRequest._retryCount > 3) {
+        console.error('Max retry attempts reached');
+        await clearAccessToken();
+        router.replace('/login');
+        return Promise.reject(error);
+      }
 
       try {
-        // Refresh endpoint reads refreshToken from cookie automatically
-        const res = await api.get('/refresh');
+        // Add delay for exponential backoff
+        await new Promise(resolve => 
+          setTimeout(resolve, Math.pow(2, originalRequest._retryCount) * 1000)
+        );
+
+        // Mark refresh request to avoid intercepting it
+        const refreshConfig: any = { _isRefreshRequest: true };
+        const res = await api.get('/refresh', refreshConfig);
         const newAccessToken = res.data.accessToken;
 
         await setAccessToken(newAccessToken);
-
-        // Retry original request with new token
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
         console.error('Refresh failed:', refreshError);
         await clearAccessToken();
         router.replace('/login');
+        return Promise.reject(refreshError);
       }
     }
 
