@@ -177,6 +177,29 @@ export default function TaskItem({
     setTimeout(() => onToggleArchive(task.id), 150);
   };
 
+  // Dimmed color for archived items
+  const getDimmedColor = (originalColor: string) => {
+    if (!task.archived_status) return originalColor;
+    
+    // Convert hex to RGB and reduce brightness
+    if (originalColor.startsWith('#')) {
+      const hex = originalColor.replace('#', '');
+      const r = parseInt(hex.substr(0, 2), 16);
+      const g = parseInt(hex.substr(2, 2), 16);
+      const b = parseInt(hex.substr(4, 2), 16);
+      
+      // Reduce brightness by 40%
+      const dimmedR = Math.floor(r * 0.6);
+      const dimmedG = Math.floor(g * 0.6);
+      const dimmedB = Math.floor(b * 0.6);
+      
+      return `#${dimmedR.toString(16).padStart(2, '0')}${dimmedG.toString(16).padStart(2, '0')}${dimmedB.toString(16).padStart(2, '0')}`;
+    }
+    
+    // Fallback for non-hex colors
+    return originalColor;
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -215,8 +238,10 @@ export default function TaskItem({
       <Animated.View
         style={[
           styles.taskItem,
-          { backgroundColor: cardColor, borderColor },
-          task.archived_status && styles.archivedTask,
+          { 
+            backgroundColor: task.archived_status ? getDimmedColor(cardColor) : cardColor, 
+            borderColor: task.archived_status ? getDimmedColor(borderColor) : borderColor 
+          },
           {
             transform: [{ translateX: swipeAnim }],
           },
@@ -231,14 +256,14 @@ export default function TaskItem({
             style={[
               styles.checkbox,
               { 
-                backgroundColor: task.completion_status ? tintColor : 'transparent',
-                borderColor: tintColor
+                backgroundColor: task.completion_status ? getDimmedColor(tintColor) : 'transparent',
+                borderColor: getDimmedColor(tintColor)
               },
               { transform: [{ scale: checkScale }] }
             ]}
           >
             {task.completion_status && (
-              <Ionicons name="checkmark" size={16} color="#fff" />
+              <Ionicons name="checkmark" size={16} color={task.archived_status ? getDimmedColor('#fff') : '#fff'} />
             )}
           </Animated.View>
         </TouchableOpacity>
@@ -252,7 +277,7 @@ export default function TaskItem({
           {isEditing ? (
             <View style={styles.editContainer}>
               <TextInput
-                style={[styles.editInput, { color: textColor }]}
+                style={[styles.editInput, { color: getDimmedColor(textColor) }]}
                 value={editingText}
                 onChangeText={onEditTextChange}
                 autoFocus
@@ -261,10 +286,10 @@ export default function TaskItem({
               />
               <View style={styles.editButtons}>
                 <TouchableOpacity onPress={onSaveEdit} style={styles.editButton}>
-                  <Ionicons name="checkmark" size={20} color={tintColor} />
+                  <Ionicons name="checkmark" size={20} color={getDimmedColor(tintColor)} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={onCancelEdit} style={styles.editButton}>
-                  <Ionicons name="close" size={20} color="#ef4444" />
+                  <Ionicons name="close" size={20} color={getDimmedColor('#ef4444')} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -274,16 +299,15 @@ export default function TaskItem({
                 style={[
                   styles.taskTitle,
                   { 
-                    color: textColor,
+                    color: getDimmedColor(textColor), 
                     textDecorationLine: task.completion_status ? 'line-through' : 'none',
-                    opacity: task.completion_status ? 0.7 : 1
                   }
                 ]}
                 numberOfLines={2}
               >
                 {task.title}
               </Text>
-              <Text style={[styles.taskDate, { color: textColor, opacity: 0.6 }]}>
+              <Text style={[styles.taskDate, { color: getDimmedColor(textColor) }]}>
                 {formatDate(task.date)}
               </Text>
             </>
@@ -299,7 +323,7 @@ export default function TaskItem({
               <Ionicons 
                 name={task.starred_status ? "star" : "star-outline"} 
                 size={22} 
-                color={task.starred_status ? "#F59E0B" : textColor} 
+                color={task.starred_status ? getDimmedColor("#F59E0B") : getDimmedColor(textColor)} 
               />
             </Animated.View>
           </TouchableOpacity>
@@ -312,7 +336,7 @@ export default function TaskItem({
               <Ionicons 
                 name={task.archived_status ? "archive" : "archive-outline"} 
                 size={20} 
-                color={task.archived_status ? "#8B5CF6" : textColor} 
+                color={task.archived_status ? getDimmedColor("#8B5CF6") : getDimmedColor(textColor)} 
               />
             </Animated.View>
           </TouchableOpacity>
@@ -322,7 +346,7 @@ export default function TaskItem({
               onPress={() => onDeleteTask(task.id)}
               style={styles.deleteButton}
             >
-              <Ionicons name="trash-outline" size={20} color="#ef4444" />
+              <Ionicons name="trash-outline" size={20} color={getDimmedColor("#ef4444")} />
             </TouchableOpacity>
           )}
         </View>
@@ -330,7 +354,6 @@ export default function TaskItem({
     </Animated.View>
   );
 }
-
 
 const styles = StyleSheet.create({
   taskItem: {
@@ -345,9 +368,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
     overflow: 'hidden',
-  },
-  archivedTask: {
-    opacity: 0.6,
   },
   checkboxContainer: {
     marginRight: 16,

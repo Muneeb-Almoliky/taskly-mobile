@@ -12,7 +12,7 @@ interface TaskListProps {
   onToggleStar: (taskId: string) => void;
   onToggleArchive: (taskId: string) => void;
   onDeleteTask: (taskId: string) => void;
-  onEditTask: (taskId: string, newTitle: string) => Promise<void>;
+  onEditTask?: (taskId: string, newTitle: string) => Promise<void>;
 }
 
 export default function TaskList({ 
@@ -39,7 +39,7 @@ export default function TaskList({
   const saveEdit = async (taskId: string) => {
     if (editingText.trim()) {
       try {
-        await onEditTask(taskId, editingText);
+        await onEditTask!(taskId, editingText);
         console.log("Edit successful");
       } catch (error) {
         console.error("Edit failed:", error);

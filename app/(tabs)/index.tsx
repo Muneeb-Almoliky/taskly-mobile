@@ -348,7 +348,7 @@ export default function Tasks() {
           showsHorizontalScrollIndicator={false}
           style={styles.filterContainer}
         >
-          {[TaskStatus.ALL, TaskStatus.ACTIVE, TaskStatus.COMPLETED, TaskStatus.STARRED, TaskStatus.ARCHIVED].map(filter => (
+          {[TaskStatus.ALL, TaskStatus.ACTIVE, TaskStatus.COMPLETED, TaskStatus.STARRED].map(filter => (
             <TouchableOpacity
               key={filter}
               style={[
