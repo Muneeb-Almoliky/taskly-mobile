@@ -13,8 +13,7 @@ export async function getProfilePicture(email: string | null) {
 }
 
 export async function uploadProfilePicture(email: string | null, uri: string, filename?: string) {
-  const response = await fetch(uri);
-  const blob = await response.blob();
+  if (!email) throw new Error("Email is required");
 
   let name = filename || uri.split("/").pop() || `profile_${Date.now()}.jpg`;
   if (!/\.(jpg|jpeg|png)$/i.test(name)) {
@@ -22,7 +21,10 @@ export async function uploadProfilePicture(email: string | null, uri: string, fi
   }
 
   const formData = new FormData();
-  formData.append("image", blob, name);
+  formData.append("image", {
+    uri,                     // <-- use the local URI directly
+    name,                    
+  } as any); 
 
   const res = await api.post(`/upload/${email}`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
@@ -35,4 +37,5 @@ export async function uploadProfilePicture(email: string | null, uri: string, fi
       : null,
   };
 }
+
 
