@@ -26,26 +26,27 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="add-task"
         options={{
-          title: 'Profile',
-          tabBarIcon: ({ color }) => <Ionicons size={28} name="person-circle" color={color} />,
+          title: 'Add Task',
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="add-circle" color={color} />,
         }}
       />
+
       <Tabs.Screen
       name="archived"
       options={{
         title: 'Archived',
         tabBarIcon: ({ color }) => <Ionicons size={28} name="archive" color={color} />,
       }}
-    />
+      />
       <Tabs.Screen
-      name="add-task"
-      options={{
-        title: 'Add Task',
-        tabBarIcon: ({ color }) => <Ionicons size={28} name="add-circle" color={color} />,
-      }}
-    />
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="person-circle" color={color} />,
+        }}
+      />
     </Tabs>
     
   );
