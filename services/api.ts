@@ -6,6 +6,9 @@ import { Platform } from 'react-native';
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL_MOBILE; // your backend
 
+export function getBaseUrl() {
+  return BASE_URL;
+}
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true, // ensures cookies are sent automatically
