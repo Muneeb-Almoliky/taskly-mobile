@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
-const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL_MOBILE; // your backend
+const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export function getBaseUrl() {
   return BASE_URL;
