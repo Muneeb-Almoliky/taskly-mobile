@@ -1,50 +1,48 @@
-# Welcome to your Expo app 👋
+# 📱 Taskly Mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Taskly Mobile is the React Native client for the [Taskly API](https://github.com/Muneeb-Almoliky/task-manager-app-api), a full-stack task management app.  
+Built with **Expo**, **React Native**, and **Expo Router**, it connects to the backend to let users create, manage, and track their tasks seamlessly on mobile devices.
 
-## Get started
+---
 
-1. Install dependencies
+## 🚀 Features
+- View and manage tasks synced with the backend
+- Create tasks with optional due dates
+- Manage your profile and update your picture
+- Dark/Light theme support
+- Cross-platform: Android, iOS, and Web (via Expo)
 
+---
+
+## 📦 Setup & Installation
+
+> **Note:** The [Taskly API (Backend)](https://github.com/Muneeb-Almoliky/task-manager-app-api) must be set up and running before using this mobile app.  
+> You can use the local setup or a deployed backend URL.
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/Muneeb-Almoliky/taskly-mobile.git
+   cd taskly-mobile
+   ```
+2. Install dependencies:
    ```bash
    npm install
    ```
-
-2. Start the app
+3. Create a `.env` file in the root of the project and configure the backend URL:
 
    ```bash
-   npx expo start
+   # For local development
+   EXPO_PUBLIC_API_BASE_URL=http://localhost:5000
+
+   # Or for a deployed backend
+   # EXPO_PUBLIC_API_BASE_URL=https://your-deployed-backend.com
+   ```
+4. Start the development server:
+   ```bash
+   npx expo start --port 3000
    ```
 
-In the output, you'll find options to open the app in a
+## 🔗 Related Repositories
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- [Taskly API (Backend)](https://github.com/Muneeb-Almoliky/task-manager-app-api) — Central backend that powers both the web and mobile clients.  
+- [Taskly Web Client](https://github.com/Muneeb-Almoliky/taskly-web) — The original web interface for Taskly, built before the mobile app.
