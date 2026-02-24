@@ -5,9 +5,9 @@
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#4361EE'; // Vibrant blue
-const tintColorDark = '#4361EE';  // Same vibrant blue for consistency
-const secondaryColor = '#7C3AED'; // Purple for gradients
+const tintColorLight = '#6366F1'; // Professional Indigo
+const tintColorDark = '#6366F1';  // Same Indigo for consistency
+const secondaryColor = '#818CF8'; // Subtler indigo for secondary
 
 export const Colors = {
   light: {

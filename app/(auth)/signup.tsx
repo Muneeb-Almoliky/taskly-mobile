@@ -1,11 +1,9 @@
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Animated, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { signup } from '../../services/authService';
 
 export default function Signup() {
@@ -55,20 +53,6 @@ export default function Signup() {
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
-      {/* Header with Gradient */}
-      <LinearGradient
-        colors={[tintColor, '#7C3AED']}
-        style={styles.header}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-      >
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.appTitle}>Taskly</Text>
-        <Text style={styles.headerSubtitle}>Organize your tasks efficiently</Text>
-      </LinearGradient>
-
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -140,32 +124,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingBottom: 30,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  backButton: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 40,
-    left: 20,
-    zIndex: 10,
-  },
-  appTitle: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#fff',
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
-    marginTop: 4,
-  },
   scrollView: {
     flex: 1,
   },
@@ -175,20 +133,9 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   formContainer: {
-    borderRadius: 24,
+    borderRadius: 12,
     padding: 24,
     borderWidth: 1,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 8,
-      },
-    }),
   },
   title: {
     fontSize: 28,

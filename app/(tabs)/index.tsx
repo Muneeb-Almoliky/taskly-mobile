@@ -1,34 +1,31 @@
-
-
-import { useState, useEffect, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  Alert,
-  Animated,
-  Easing,
-  Dimensions,
-  TextInput,
-  RefreshControl
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import Header from '@/components/Header';
 import TaskList from '@/components/task-list';
-import { CreateTaskData, Task, TaskStatus } from '@/constants/types';
-import { 
-  getTasks, 
-  createTask, 
-  updateTask, 
-  deleteTask, 
-  toggleTaskCompletion, 
-  toggleTaskStar,
-  toggleArchiveTask 
+import { Task, TaskStatus } from '@/constants/types';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { getEmail } from '@/services/authService';
+import {
+    deleteTask,
+    getTasks,
+    toggleArchiveTask,
+    toggleTaskCompletion,
+    toggleTaskStar,
+    updateTask
 } from '@/services/taskService';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import {
+    Alert,
+    Animated,
+    Dimensions,
+    Easing,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -37,8 +34,7 @@ export default function Tasks() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState(TaskStatus.ALL);
-  const [newTaskText, setNewTaskText] = useState('');
-  const [isAddingTask, setIsAddingTask] = useState(false);
+  const [userName, setUserName] = useState('');
   const router = useRouter();
   
   const textColor = useThemeColor({}, 'text');
@@ -50,14 +46,29 @@ export default function Tasks() {
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
-  const addButtonRotate = useRef(new Animated.Value(0)).current;
-  const taskInputHeight = useRef(new Animated.Value(0)).current;
   const headerScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     loadTasks();
+    loadUserInfo();
     animateHeader();
   }, []);
+
+  const loadUserInfo = async () => {
+    try {
+      const email = await getEmail();
+      if (email) {
+        const nameFromEmail = email.split('@')[0];
+        const formattedName = nameFromEmail
+          .split('.')
+          .map((s: string) => s.charAt(0).toUpperCase() + s.slice(1))
+          .join(' ');
+        setUserName(formattedName);
+      }
+    } catch (error) {
+      console.error('Error loading user info:', error);
+    }
+  };
 
   const animateHeader = () => {
     Animated.parallel([
@@ -97,36 +108,6 @@ export default function Tasks() {
   const onRefresh = () => {
     setRefreshing(true);
     loadTasks();
-  };
-
-  const handleAddTask = async () => {
-    if (!newTaskText.trim()) return;
-    
-    try {
-      const currentDate = new Date().toISOString();
-      const data: CreateTaskData = { title: newTaskText.trim(), date: currentDate, completionStatus: false, starredStatus: false };
-      const newTask = await createTask(data);
-      loadTasks();
-      setNewTaskText('');
-      toggleAddTask();
-      
-      // Success animation
-      Animated.sequence([
-        Animated.timing(headerScale, {
-          toValue: 1.05,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.spring(headerScale, {
-          toValue: 1,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } catch (error) {
-      console.error('Error creating task:', error);
-      Alert.alert('Error', 'Failed to create task');
-    }
   };
 
   const handleToggleTask = async (taskId: string) => {
@@ -176,54 +157,20 @@ export default function Tasks() {
     }
   };
 
-  const handleEditTask = async (taskId: string, newTitle: string) => {
+  const handleEditTask = async (taskId: string, newTitle: string, dueDate?: Date | null) => {
     try {
       // Update local state immediately for better UX
       setTasks(tasks.map(t => 
-        t.id === taskId ? { ...t, title: newTitle } : t
+        t.id === taskId ? { ...t, title: newTitle, due_date: dueDate !== undefined ? dueDate : t.due_date } : t
       ));
       
       // Then call the API
-      await updateTask(taskId, newTitle);
-      
-      // Optional: reload to ensure sync with server
-      // loadTasks();
+      await updateTask(taskId, newTitle, dueDate);
     } catch (error) {
       console.error('Error editing task:', error);
       Alert.alert('Error', 'Failed to update task');
       // Revert local state if API call fails
       loadTasks();
-    }
-  };
-
-  const toggleAddTask = () => {
-    if (isAddingTask) {
-      Animated.parallel([
-        Animated.timing(taskInputHeight, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: false,
-        }),
-        Animated.timing(addButtonRotate, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => setIsAddingTask(false));
-    } else {
-      setIsAddingTask(true);
-      Animated.parallel([
-        Animated.timing(taskInputHeight, {
-          toValue: 80,
-          duration: 300,
-          useNativeDriver: false,
-        }),
-        Animated.timing(addButtonRotate, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
     }
   };
 
@@ -244,27 +191,12 @@ export default function Tasks() {
 
   const completionPercentage = stats.total > 0 ? (stats.completed / stats.total) * 100 : 0;
 
-  const addButtonInterpolate = addButtonRotate.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '135deg'],
-  });
-
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor }]}>
-        <LinearGradient
-          colors={[tintColor, '#7C3AED']}
-          style={styles.header}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-        >
-          <Text style={styles.appTitle}>Taskly</Text>
-          <Text style={styles.headerSubtitle}>Loading your tasks...</Text>
-        </LinearGradient>
+        <Header title="Taskly" subtitle="Loading your tasks..." />
         <View style={styles.loadingContainer}>
-          <Animated.View style={styles.loadingSpinner}>
-            <Ionicons name="refresh-circle" size={60} color={tintColor} />
-          </Animated.View>
+          <Ionicons name="hourglass-outline" size={40} color={tintColor} />
           <Text style={[styles.loadingText, { color: textColor }]}>Getting things ready</Text>
         </View>
       </View>
@@ -273,71 +205,49 @@ export default function Tasks() {
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
-      {/* Header with Gradient */}
+      {/* Universal Header */}
+      <Header
+        title="Tasks"
+        subtitle={`Let's get things done, ${userName}`}
+      />
+
+      {/* Progress Bar */}
+      <View style={styles.progressContainer}>
+        <View style={[styles.progressBackground, { backgroundColor, borderColor, borderWidth: 1 }]}>
+          <View 
+            style={[
+              styles.progressFill, 
+              { 
+                width: `${completionPercentage}%`,
+                backgroundColor: tintColor
+              }
+            ]} 
+          />
+        </View>
+        <Text style={styles.progressText}>
+          {Math.round(completionPercentage)}% Complete
+        </Text>
+      </View>
+
+      {/* Stats Cards */}
       <Animated.View 
         style={[
-          styles.headerWrapper,
-          { transform: [{ scale: headerScale }] }
+          styles.statsContainer, 
+          { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
         ]}
       >
-        <LinearGradient
-          colors={[tintColor, '#7C3AED']}
-          style={styles.header}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-        >
-          <View style={styles.headerTop}>
-            <View>
-              <Text style={styles.appTitle}>Taskly</Text>
-              <Text style={styles.headerSubtitle}>Your productivity companion</Text>
-            </View>
-            <TouchableOpacity 
-            //   onPress={() => router.push('/profile')} 
-              style={styles.profileButton}
-            >
-              <Ionicons name="person" size={22} color="#fff" />
-            </TouchableOpacity>
-          </View>
-          
-          {/* Progress Bar */}
-          <View style={styles.progressContainer}>
-            <View style={[styles.progressBackground, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
-              <View 
-                style={[
-                  styles.progressFill, 
-                  { 
-                    width: `${completionPercentage}%`,
-                    backgroundColor: '#fff'
-                  }
-                ]} 
-              />
-            </View>
-            <Text style={styles.progressText}>
-              {Math.round(completionPercentage)}% Complete
-            </Text>
-          </View>
-
-          {/* Stats Cards */}
-          <Animated.View 
-            style={[
-              styles.statsContainer, 
-              { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
-            ]}
-          >
-            <View style={[styles.statCard, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
-              <Text style={styles.statNumber}>{stats.total}</Text>
-              <Text style={styles.statLabel}>Total</Text>
-            </View>
-            <View style={[styles.statCard, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
-              <Text style={styles.statNumber}>{stats.completed}</Text>
-              <Text style={styles.statLabel}>Done</Text>
-            </View>
-            <View style={[styles.statCard, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
-              <Text style={styles.statNumber}>{stats.starred}</Text>
-              <Text style={styles.statLabel}>Starred</Text>
-            </View>
-          </Animated.View>
-        </LinearGradient>
+        <View style={[styles.statCard, { backgroundColor, borderColor, borderWidth: 1 }]}>
+          <Text style={[styles.statNumber, { color: textColor }]}>{stats.total}</Text>
+          <Text style={styles.statLabel}>Total</Text>
+        </View>
+        <View style={[styles.statCard, { backgroundColor, borderColor, borderWidth: 1 }]}>
+          <Text style={[styles.statNumber, { color: textColor }]}>{stats.completed}</Text>
+          <Text style={styles.statLabel}>Done</Text>
+        </View>
+        <View style={[styles.statCard, { backgroundColor, borderColor, borderWidth: 1 }]}>
+          <Text style={[styles.statNumber, { color: textColor }]}>{stats.starred}</Text>
+          <Text style={styles.statLabel}>Starred</Text>
+        </View>
       </Animated.View>
 
       {/* Main Content */}
@@ -391,29 +301,6 @@ export default function Tasks() {
             onEditTask={handleEditTask}
           />
         </ScrollView>
-
-        {/* Add Task Input */}
-        <Animated.View style={[styles.addTaskContainer, { height: taskInputHeight }]}>
-          <TextInput
-            style={[styles.taskInput, { backgroundColor: cardColor, color: textColor, borderColor }]}
-            placeholder="What needs to be done?"
-            placeholderTextColor="#9CA3AF"
-            value={newTaskText}
-            onChangeText={setNewTaskText}
-            onSubmitEditing={handleAddTask}
-          />
-        </Animated.View>
-
-        {/* Add Task Button */}
-        <View style={styles.addButtonContainer}>
-          <TouchableOpacity 
-            style={[styles.addButton, { backgroundColor: tintColor }]}
-            onPress={() => router.push('/add-task')} // navigate to Add Task Screen
-          >
-            <Ionicons name="add" size={28} color="#fff" />
-          </TouchableOpacity>
-        </View>
-
       </View>
     </View>
   );
@@ -423,43 +310,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  headerWrapper: {
-    zIndex: 10,
-  },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 30,
-    paddingHorizontal: 25,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 20,
-  },
-  appTitle: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
-  profileButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 4,
-  },
   progressContainer: {
-    marginBottom: 25,
+    paddingHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 16,
   },
   progressBackground: {
     height: 6,
@@ -472,31 +326,32 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   progressText: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 13,
+    color: '#9CA3AF',
     fontWeight: '600',
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 4,
   },
   statCard: {
     flex: 1,
-    marginHorizontal: 6,
-    padding: 16,
-    borderRadius: 20,
+    marginHorizontal: 4,
+    padding: 14,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   statNumber: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#fff',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#9CA3AF',
     fontWeight: '600',
   },
   content: {
@@ -509,16 +364,11 @@ const styles = StyleSheet.create({
     maxHeight: 40,
   },
   filterChip: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
     borderWidth: 1,
-    marginRight: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    marginRight: 8,
   },
   filterText: {
     fontWeight: '600',
@@ -530,52 +380,15 @@ const styles = StyleSheet.create({
   taskListContainer: {
     flex: 1,
   },
-  addTaskContainer: {
-    overflow: 'hidden',
-    marginTop: 15,
-    marginBottom: 10,
-  },
-  taskInput: {
-    height: 56,
-    borderRadius: 16,
-    borderWidth: 1,
-    paddingHorizontal: 20,
-    fontSize: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  addButtonContainer: {
-    position: 'absolute',
-    right: 20,
-    bottom: 25,
-    zIndex: 20,
-  },
-  addButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 16,
     paddingBottom: 100,
   },
-  loadingSpinner: {
-    marginBottom: 20,
-  },
   loadingText: {
-    fontSize: 16,
-    opacity: 0.7,
+    fontSize: 15,
+    opacity: 0.5,
   },
 });

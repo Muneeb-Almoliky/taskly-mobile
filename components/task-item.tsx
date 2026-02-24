@@ -1,16 +1,18 @@
 import { Task } from '@/constants/types';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useRef } from 'react';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useEffect, useRef, useState } from 'react';
 import {
-  Animated,
-  Dimensions,
-  Easing,
-  PanResponder,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Animated,
+    Dimensions,
+    Easing,
+    PanResponder,
+    Platform,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -21,7 +23,9 @@ interface TaskItemProps {
   index: number;
   isEditing: boolean;
   editingText: string;
+  editingDueDate: Date | null;
   onEditTextChange: (text: string) => void;
+  onEditDueDateChange: (date: Date | null) => void;
   onStartEdit: () => void;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
@@ -40,7 +44,9 @@ export default function TaskItem({
   index,
   isEditing,
   editingText,
+  editingDueDate,
   onEditTextChange,
+  onEditDueDateChange,
   onStartEdit,
   onSaveEdit,
   onCancelEdit,
@@ -53,6 +59,8 @@ export default function TaskItem({
   cardColor,
   borderColor
 }: TaskItemProps) {
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
@@ -120,7 +128,7 @@ export default function TaskItem({
   const animateCheck = () => {
     Animated.sequence([
       Animated.timing(checkScale, {
-        toValue: 1.2,
+        toValue: 1.1,
         duration: 100,
         useNativeDriver: true,
       }),
@@ -135,7 +143,7 @@ export default function TaskItem({
   const animateStar = () => {
     Animated.sequence([
       Animated.timing(starScale, {
-        toValue: 1.3,
+        toValue: 1.15,
         duration: 100,
         useNativeDriver: true,
       }),
@@ -150,7 +158,7 @@ export default function TaskItem({
   const animateArchive = () => {
     Animated.sequence([
       Animated.timing(archiveScale, {
-        toValue: 1.2,
+        toValue: 1.1,
         duration: 100,
         useNativeDriver: true,
       }),
@@ -276,21 +284,92 @@ export default function TaskItem({
         >
           {isEditing ? (
             <View style={styles.editContainer}>
-              <TextInput
-                style={[styles.editInput, { color: getDimmedColor(textColor) }]}
-                value={editingText}
-                onChangeText={onEditTextChange}
-                autoFocus
-                onSubmitEditing={onSaveEdit}
-                onBlur={onCancelEdit}
-              />
-              <View style={styles.editButtons}>
-                <TouchableOpacity onPress={onSaveEdit} style={styles.editButton}>
-                  <Ionicons name="checkmark" size={20} color={getDimmedColor(tintColor)} />
+              {/* Title Edit Row */}
+              <View style={styles.editTitleRow}>
+                <TextInput
+                  style={[styles.editInput, { color: getDimmedColor(textColor), borderBottomColor: getDimmedColor(tintColor) }]}
+                  value={editingText}
+                  onChangeText={onEditTextChange}
+                  autoFocus
+                  onSubmitEditing={onSaveEdit}
+                  placeholder="Task title"
+                  placeholderTextColor="#9CA3AF"
+                />
+                <View style={styles.editInlineButtons}>
+                  <TouchableOpacity onPress={onCancelEdit} style={styles.editIconButton}>
+                    <Ionicons name="close" size={20} color="#9CA3AF" />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={onSaveEdit} style={[styles.editIconButton, { backgroundColor: getDimmedColor(tintColor) }]}>
+                    <Ionicons name="checkmark" size={16} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Due Date Pill Row */}
+              <View style={styles.editDateRow}>
+                <TouchableOpacity 
+                  style={[styles.dueDatePill, { 
+                    borderColor: editingDueDate ? getDimmedColor(tintColor) : getDimmedColor(borderColor),
+                    backgroundColor: editingDueDate ? getDimmedColor(tintColor) + '15' : 'transparent'
+                  }]}
+                  onPress={() => {
+                    if (!editingDueDate) {
+                      onEditDueDateChange(new Date());
+                    }
+                    setShowDatePicker(true);
+                  }}
+                >
+                  <Ionicons 
+                    name={editingDueDate ? 'calendar' : 'calendar-outline'} 
+                    size={14} 
+                    color={editingDueDate ? getDimmedColor(tintColor) : '#9CA3AF'} 
+                  />
+                  <Text style={[styles.dueDatePillText, { color: editingDueDate ? getDimmedColor(tintColor) : '#9CA3AF' }]}>
+                    {editingDueDate 
+                      ? editingDueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                      : 'Due Date'
+                    }
+                  </Text>
+                  {editingDueDate && (
+                    <TouchableOpacity 
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        onEditDueDateChange(null);
+                        setShowDatePicker(false);
+                      }} 
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      style={{ marginLeft: 4 }}
+                    >
+                      <Ionicons name="close-circle" size={14} color={getDimmedColor(tintColor)} />
+                    </TouchableOpacity>
+                  )}
                 </TouchableOpacity>
-                <TouchableOpacity onPress={onCancelEdit} style={styles.editButton}>
-                  <Ionicons name="close" size={20} color={getDimmedColor('#ef4444')} />
-                </TouchableOpacity>
+
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={editingDueDate || new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      if (event.type === 'set' && selectedDate) {
+                        onEditDueDateChange(selectedDate);
+                      }
+                      // Close the picker on selection or dismissal (Android behavior)
+                      if (Platform.OS !== 'ios') {
+                        setShowDatePicker(false);
+                      }
+                    }}
+                  />
+                )}
+                {/* On iOS, the inline picker stays open, so we add a done button */}
+                {showDatePicker && Platform.OS === 'ios' && (
+                  <TouchableOpacity 
+                    onPress={() => setShowDatePicker(false)}
+                    style={{ marginLeft: 8, justifyContent: 'center' }}
+                  >
+                    <Text style={{ color: tintColor, fontWeight: '600' }}>Done</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           ) : (
@@ -307,49 +386,58 @@ export default function TaskItem({
               >
                 {task.title}
               </Text>
-              <Text style={[styles.taskDate, { color: getDimmedColor(textColor) }]}>
-                {formatDate(task.date)}
-              </Text>
+              {task.due_date ? (
+                <View style={styles.dueDateBadge}>
+                  <Ionicons name="calendar-outline" size={12} color={getDimmedColor(tintColor)} />
+                  <Text style={[styles.dueDateBadgeText, { color: getDimmedColor(tintColor) }]}>
+                    Due {new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </Text>
+                </View>
+              ) : (
+                <Text style={[styles.taskDate, { color: getDimmedColor(textColor) }]}>
+                  {formatDate(task.date)}
+                </Text>
+              )}
             </>
           )}
         </TouchableOpacity>
         
-        <View style={styles.taskActions}>
-          <TouchableOpacity 
-            onPress={handleToggleStar}
-            style={styles.starButton}
-          >
-            <Animated.View style={{ transform: [{ scale: starScale }] }}>
-              <Ionicons 
-                name={task.starred_status ? "star" : "star-outline"} 
-                size={22} 
-                color={task.starred_status ? getDimmedColor("#F59E0B") : getDimmedColor(textColor)} 
-              />
-            </Animated.View>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            onPress={handleToggleArchive}
-            style={styles.archiveButton}
-          >
-            <Animated.View style={{ transform: [{ scale: archiveScale }] }}>
-              <Ionicons 
-                name={task.archived_status ? "archive" : "archive-outline"} 
-                size={20} 
-                color={task.archived_status ? getDimmedColor("#8B5CF6") : getDimmedColor(textColor)} 
-              />
-            </Animated.View>
-          </TouchableOpacity>
-          
-          {!isEditing && (
+        {!isEditing && (
+          <View style={styles.taskActions}>
+            <TouchableOpacity 
+              onPress={handleToggleStar}
+              style={styles.starButton}
+            >
+              <Animated.View style={{ transform: [{ scale: starScale }] }}>
+                <Ionicons 
+                  name={task.starred_status ? "star" : "star-outline"} 
+                  size={22} 
+                  color={task.starred_status ? getDimmedColor("#F59E0B") : getDimmedColor(textColor)} 
+                />
+              </Animated.View>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              onPress={handleToggleArchive}
+              style={styles.archiveButton}
+            >
+              <Animated.View style={{ transform: [{ scale: archiveScale }] }}>
+                <Ionicons 
+                  name={task.archived_status ? "archive" : "archive-outline"} 
+                  size={20} 
+                  color={task.archived_status ? getDimmedColor("#8B5CF6") : getDimmedColor(textColor)} 
+                />
+              </Animated.View>
+            </TouchableOpacity>
+            
             <TouchableOpacity 
               onPress={() => onDeleteTask(task.id)}
               style={styles.deleteButton}
             >
               <Ionicons name="trash-outline" size={20} color={getDimmedColor("#ef4444")} />
             </TouchableOpacity>
-          )}
-        </View>
+          </View>
+        )}
       </Animated.View>
     </Animated.View>
   );
@@ -359,24 +447,19 @@ const styles = StyleSheet.create({
   taskItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 18,
-    borderRadius: 20,
+    padding: 16,
+    borderRadius: 8,
     borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
     overflow: 'hidden',
   },
   checkboxContainer: {
     marginRight: 16,
   },
   checkbox: {
-    width: 28,
-    height: 28,
+    width: 24,
+    height: 24,
     borderRadius: 8,
-    borderWidth: 2,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -415,7 +498,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-end',
     paddingRight: 20,
-    borderRadius: 20,
+    borderRadius: 8,
     flexDirection: 'row',
   },
   deleteText: {
@@ -424,23 +507,71 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   editContainer: {
+    flexDirection: 'column',
+    width: '100%',
+    paddingVertical: 2,
+  },
+  editTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
+    gap: 8,
   },
   editInput: {
     flex: 1,
     fontSize: 16,
     paddingVertical: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomWidth: 1.5,
   },
-  editButtons: {
+  editInlineButtons: {
     flexDirection: 'row',
-    marginLeft: 10,
+    alignItems: 'center',
+    gap: 6,
   },
-  editButton: {
-    padding: 4,
-    marginLeft: 8,
+  editIconButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F3F4F6',
+  },
+  editDateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    gap: 8,
+  },
+  dueDatePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderRadius: 20,
+    gap: 6,
+  },
+  dueDatePillText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  dateInlineInput: {
+    fontSize: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderRadius: 20,
+    minWidth: 90,
+    textAlign: 'center',
+  },
+  dueDateBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  dueDateBadgeText: {
+    fontSize: 12,
+    fontWeight: '500',
   },
 });

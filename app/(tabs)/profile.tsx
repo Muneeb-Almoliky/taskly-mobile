@@ -1,24 +1,24 @@
-import { useState, useEffect, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  Alert,
-  Animated,
-  Easing,
-  Dimensions,
-  Image,
-  Switch
-} from 'react-native';
-import { useRouter } from 'expo-router';
+import Header from '@/components/Header';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { getEmail, logout } from '@/services/authService';
 import { getProfilePicture, uploadProfilePicture } from '@/services/userService';
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import {
+    Alert,
+    Animated,
+    Dimensions,
+    Easing,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Switch,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -192,19 +192,9 @@ export default function Profile() {
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor }]}>
-        <LinearGradient
-          colors={[tintColor, '#7C3AED']}
-          style={styles.header}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-        >
-          <Text style={styles.appTitle}>Taskly</Text>
-          <Text style={styles.headerSubtitle}>Loading your profile...</Text>
-        </LinearGradient>
+        <Header title="Taskly" subtitle="Loading your profile..." />
         <View style={styles.loadingContainer}>
-          <Animated.View style={styles.loadingSpinner}>
-            <Ionicons name="person" size={60} color={tintColor} />
-          </Animated.View>
+          <Ionicons name="person-outline" size={40} color={tintColor} />
           <Text style={[styles.loadingText, { color: textColor }]}>Loading profile</Text>
         </View>
       </View>
@@ -213,31 +203,12 @@ export default function Profile() {
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
-      {/* Header with Gradient */}
-      <Animated.View 
-        style={[
-          styles.headerWrapper,
-          { transform: [{ scale: headerScale }] }
-        ]}
-      >
-        <LinearGradient
-          colors={[tintColor, '#7C3AED']}
-          style={styles.header}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-        >
-          <View style={styles.headerTop}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color="#fff" />
-            </TouchableOpacity>
-            <View>
-              <Text style={styles.appTitle}>Taskly</Text>
-              <Text style={styles.headerSubtitle}>Your Profile</Text>
-            </View>
-            <View style={styles.placeholder} />
-          </View>
-        </LinearGradient>
-      </Animated.View>
+      {/* Universal Header */}
+      <Header
+        title="Profile"
+        subtitle="Your Profile"
+        showBackButton={false}
+      />
 
       {/* Main Content */}
       <ScrollView 
@@ -404,11 +375,11 @@ export default function Profile() {
           ]}
         >
           <TouchableOpacity 
-            style={[styles.logoutButton, { backgroundColor: '#FF3B30' }]}
+            style={[styles.logoutButton, { borderColor: '#ef4444', borderWidth: 1 }]}
             onPress={handleLogout}
           >
-            <Ionicons name="log-out-outline" size={20} color="#fff" />
-            <Text style={styles.logoutButtonText}>Logout</Text>
+            <Ionicons name="log-out-outline" size={18} color="#ef4444" />
+            <Text style={[styles.logoutButtonText, { color: '#ef4444' }]}>Logout</Text>
           </TouchableOpacity>
         </Animated.View>
       </ScrollView>
@@ -420,42 +391,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  headerWrapper: {
-    zIndex: 10,
-  },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 30,
-    paddingHorizontal: 25,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 20,
-  },
-  backButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  placeholder: {
-    width: 40,
-  },
-  appTitle: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: '#fff',
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
-  },
   content: {
     flex: 1,
     paddingHorizontal: 20,
@@ -465,14 +400,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 16,
     paddingBottom: 100,
   },
-  loadingSpinner: {
-    marginBottom: 20,
-  },
   loadingText: {
-    fontSize: 16,
-    opacity: 0.7,
+    fontSize: 15,
+    opacity: 0.5,
   },
   profileSection: {
     marginBottom: 30,
@@ -482,24 +415,24 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   profileImageWrapper: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 3,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 1.5,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
     position: 'relative',
   },
   profileImage: {
-    width: 114,
-    height: 114,
-    borderRadius: 57,
+    width: 95,
+    height: 95,
+    borderRadius: 48,
   },
   profileImagePlaceholder: {
-    width: 114,
-    height: 114,
-    borderRadius: 57,
+    width: 95,
+    height: 95,
+    borderRadius: 48,
     backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
@@ -508,12 +441,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: '#fff',
   },
   nameContainer: {
@@ -551,7 +484,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     marginHorizontal: 6,
   },
@@ -567,7 +500,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     marginBottom: 12,
   },
@@ -616,13 +549,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
-    borderRadius: 12,
+    padding: 14,
+    borderRadius: 8,
   },
   logoutButtonText: {
-    color: 'white',
     fontWeight: '600',
     marginLeft: 8,
-    fontSize: 16,
+    fontSize: 15,
   },
 });

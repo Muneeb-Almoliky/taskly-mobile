@@ -1,10 +1,17 @@
 
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import api from "./api";
-import * as SecureStore from "expo-secure-store";
-import { getEmail } from "./authService"
 import { CreateTaskData } from "@/constants/types";
+import api from "./api";
+import { getEmail } from "./authService";
+
+// Helper to prevent UTC conversion from shifting the day backwards
+const formatLocalDateForServer = (date: Date) => {
+    // Extract local year, month, and day components and format as YYYY-MM-DD
+    const localYea = date.getFullYear();
+    const localMonth = String(date.getMonth() + 1).padStart(2, '0');
+    const localDay = String(date.getDate()).padStart(2, '0');
+    return `${localYea}-${localMonth}-${localDay}`;
+};
 
 export const getTasks = async () => {
     const email = await getEmail();
@@ -19,10 +26,14 @@ export const getTasks = async () => {
 
 export const createTask = async (data: CreateTaskData) => {
     const email = await getEmail();
-    const { title, date, completionStatus, starredStatus } = data;
+    const { title, date, completionStatus, starredStatus, dueDate } = data;
     
     try {
-        const response = await api.post('/tasks', { title, date, user_email: email, completionStatus, starredStatus });
+        const payload: any = { title, date, user_email: email, completionStatus, starredStatus };
+        if (dueDate) {
+            payload.due_date = formatLocalDateForServer(dueDate);
+        }
+        const response = await api.post('/tasks', payload);
         return response.data;
     } catch (error) {
         console.error("Error creating task:", error);
@@ -30,10 +41,14 @@ export const createTask = async (data: CreateTaskData) => {
     }
 }
 
-export const updateTask = async (taskId: string, newTitle: string) => {
+export const updateTask = async (taskId: string, newTitle: string, dueDate?: Date | null) => {
     const email = await getEmail();
     try {
-        const response = await api.put(`/tasks/${taskId}`, { title: newTitle, user_email: email });
+        const payload: any = { title: newTitle, user_email: email };
+        if (dueDate !== undefined) {
+            payload.due_date = dueDate ? formatLocalDateForServer(dueDate) : null;
+        }
+        const response = await api.put(`/tasks/${taskId}`, payload);
         return response.data;
     } catch (error) {
         console.error("Error updating task:", error);

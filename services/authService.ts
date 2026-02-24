@@ -1,7 +1,7 @@
-import { Platform } from 'react-native';
-import api, { setAccessToken, clearAccessToken } from './api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from "expo-secure-store"
+import * as SecureStore from "expo-secure-store";
+import { Platform } from 'react-native';
+import api, { clearAuthData, setAccessToken } from './api';
 
 interface LoginPayload {
   email: string;
@@ -57,8 +57,8 @@ export async function logout() {
     console.warn('Logout request failed:', err.response?.data || err.message);
   }
 
-  // Clear access token from SecureStore
-  await clearAccessToken();
+  // Clear auth data from SecureStore
+  await clearAuthData();
 }
 
 

@@ -32,12 +32,14 @@ async function setAccessToken(token: string) {
   }
   await SecureStore.setItemAsync('accessToken', token);
 }
-async function clearAccessToken() {
+async function clearAuthData() {
   if (Platform.OS === 'web') {
     await AsyncStorage.removeItem('accessToken');
+    await AsyncStorage.removeItem('email');
     return;
   }
   await SecureStore.deleteItemAsync('accessToken');
+  await SecureStore.deleteItemAsync('email');
 }
 
 // --- Request Interceptor (attach access token) ---
@@ -66,11 +68,10 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
 
-      // Limit retries
       if (originalRequest._retryCount > 3) {
         console.error('Max retry attempts reached');
-        await clearAccessToken();
-        router.replace('/login');
+        await clearAuthData();
+        router.replace('/(auth)/login');
         return Promise.reject(error);
       }
 
@@ -90,8 +91,8 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         console.error('Refresh failed:', refreshError);
-        await clearAccessToken();
-        router.replace('/login');
+        await clearAuthData();
+        router.replace('/(auth)/login');
         return Promise.reject(refreshError);
       }
     }
@@ -100,5 +101,5 @@ api.interceptors.response.use(
   }
 );
 
-export { clearAccessToken, setAccessToken };
+export { clearAuthData, setAccessToken };
 export default api;

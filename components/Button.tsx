@@ -1,10 +1,11 @@
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { TouchableOpacity, TouchableOpacityProps, Text, StyleSheet } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, TouchableOpacityProps } from "react-native";
 
 interface ButtonProps extends TouchableOpacityProps {
     title: string;
     variant?: 'primary' | 'secondary';
 }
+
 export default function Button({ title, variant = 'primary', style, ...props}: ButtonProps) {
     const backgroundColor = useThemeColor(
         variant === 'secondary' ? { light: '#fff', dark: '#151718' } : {},
@@ -12,7 +13,7 @@ export default function Button({ title, variant = 'primary', style, ...props}: B
     );
 
     const textColor = useThemeColor(
-        variant === 'secondary' ? {} : {},
+        {},
         variant === 'primary' ? 'background' : 'tint'
     );
 
@@ -21,23 +22,24 @@ export default function Button({ title, variant = 'primary', style, ...props}: B
     return (
         <TouchableOpacity
             {...props}
-            style={[
-                {
-                    padding: 14,
-                    borderRadius: 8,
-                    width: '100%',
-                    alignItems: 'center',
-                    backgroundColor,
-                    ...borderStyle,
-                },
-                style
-            ]}
+            style={[styles.button, { backgroundColor, ...borderStyle }, style]}
         >
-            <Text style={{color: textColor, fontWeight: '600', fontFamily: 'sans-serif'}}>
+            <Text style={[styles.text, { color: textColor }]}>
                 {title}
             </Text>
         </TouchableOpacity>
-    )
-
-    
+    );
 }
+
+const styles = StyleSheet.create({
+    button: {
+        padding: 15,
+        borderRadius: 8,
+        width: '100%',
+        alignItems: 'center',
+    },
+    text: {
+        fontSize: 16,
+        fontWeight: '600',
+    },
+});

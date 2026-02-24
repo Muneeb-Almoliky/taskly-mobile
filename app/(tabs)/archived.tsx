@@ -1,27 +1,27 @@
-import { useState, useEffect, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  Alert,
-  Animated,
-  Easing,
-  Dimensions,
-  RefreshControl
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import Header from '@/components/Header';
 import TaskList from '@/components/task-list';
-import { Task, TaskStatus } from '@/constants/types';
-import { 
-  getTasks, 
-  deleteTask, 
-  toggleArchiveTask 
+import { Task } from '@/constants/types';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import {
+    deleteTask,
+    getTasks,
+    toggleArchiveTask
 } from '@/services/taskService';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import {
+    Alert,
+    Animated,
+    Dimensions,
+    Easing,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -157,19 +157,9 @@ export default function Archived() {
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor }]}>
-        <LinearGradient
-          colors={[tintColor, '#7C3AED']}
-          style={styles.header}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-        >
-          <Text style={styles.appTitle}>Taskly</Text>
-          <Text style={styles.headerSubtitle}>Loading your archive...</Text>
-        </LinearGradient>
+        <Header title="Taskly" subtitle="Loading your archive..." />
         <View style={styles.loadingContainer}>
-          <Animated.View style={styles.loadingSpinner}>
-            <Ionicons name="archive" size={60} color={tintColor} />
-          </Animated.View>
+          <Ionicons name="archive-outline" size={40} color={tintColor} />
           <Text style={[styles.loadingText, { color: textColor }]}>Opening the archive</Text>
         </View>
       </View>
@@ -178,57 +168,41 @@ export default function Archived() {
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
-      {/* Header with Gradient */}
+      {/* Universal Header */}
+      <Header
+        title="Archived"
+        subtitle="Your Archived Tasks"
+        showBackButton={false}
+        rightElement={
+          <TouchableOpacity 
+            onPress={handleEmptyArchive}
+            style={[styles.emptyButton, { backgroundColor, borderColor, borderWidth: 1 }]}
+            disabled={archivedTasks.length === 0}
+          >
+            <Ionicons name="trash-outline" size={22} color={archivedTasks.length === 0 ? 'rgba(255,100,100,0.5)' : '#ef4444'} />
+          </TouchableOpacity>
+        }
+      />
+
+      {/* Stats Cards */}
       <Animated.View 
         style={[
-          styles.headerWrapper,
-          { transform: [{ scale: headerScale }] }
+          styles.statsContainer, 
+          { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
         ]}
       >
-        <LinearGradient
-          colors={[tintColor, '#7C3AED']}
-          style={styles.header}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-        >
-          <View style={styles.headerTop}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color="#fff" />
-            </TouchableOpacity>
-            <View>
-              <Text style={styles.appTitle}>Taskly</Text>
-              <Text style={styles.headerSubtitle}>Your Archived Tasks</Text>
-            </View>
-            <TouchableOpacity 
-              onPress={handleEmptyArchive}
-              style={styles.emptyButton}
-              disabled={archivedTasks.length === 0}
-            >
-              <Ionicons name="trash-outline" size={22} color={archivedTasks.length === 0 ? 'rgba(255,255,255,0.5)' : '#fff'} />
-            </TouchableOpacity>
-          </View>
-          
-          {/* Stats Cards */}
-          <Animated.View 
-            style={[
-              styles.statsContainer, 
-              { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
-            ]}
-          >
-            <View style={[styles.statCard, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
-              <Text style={styles.statNumber}>{archivedTasks.length}</Text>
-              <Text style={styles.statLabel}>Archived</Text>
-            </View>
-            <View style={[styles.statCard, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
-              <Text style={styles.statNumber}>{tasks.filter(t => t.completion_status).length}</Text>
-              <Text style={styles.statLabel}>Completed</Text>
-            </View>
-            <View style={[styles.statCard, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
-              <Text style={styles.statNumber}>{tasks.length}</Text>
-              <Text style={styles.statLabel}>Total</Text>
-            </View>
-          </Animated.View>
-        </LinearGradient>
+        <View style={[styles.statCard, { backgroundColor, borderColor, borderWidth: 1 }]}>
+          <Text style={[styles.statNumber, { color: textColor }]}>{archivedTasks.length}</Text>
+          <Text style={styles.statLabel}>Archived</Text>
+        </View>
+        <View style={[styles.statCard, { backgroundColor, borderColor, borderWidth: 1 }]}>
+          <Text style={[styles.statNumber, { color: textColor }]}>{tasks.filter(t => t.completion_status).length}</Text>
+          <Text style={styles.statLabel}>Completed</Text>
+        </View>
+        <View style={[styles.statCard, { backgroundColor, borderColor, borderWidth: 1 }]}>
+          <Text style={[styles.statNumber, { color: textColor }]}>{tasks.length}</Text>
+          <Text style={styles.statLabel}>Total</Text>
+        </View>
       </Animated.View>
 
       {/* Main Content */}
@@ -276,32 +250,6 @@ export default function Archived() {
                 onToggleTask={() => {}}
               />
             </ScrollView>
-
-            {/* Quick Actions */}
-            <Animated.View 
-              style={[
-                styles.quickActions,
-                { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
-              ]}
-            >
-              <Text style={[styles.quickActionsTitle, { color: textColor }]}>Quick Actions</Text>
-              <View style={styles.quickActionsRow}>
-                <TouchableOpacity 
-                  style={[styles.quickActionButton, { backgroundColor: cardColor, borderColor }]}
-                  onPress={() => router.push('/')}
-                >
-                  <Ionicons name="list" size={20} color={tintColor} />
-                  <Text style={[styles.quickActionText, { color: textColor }]}>Active Tasks</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.quickActionButton, { backgroundColor: cardColor, borderColor }]}
-                  onPress={handleEmptyArchive}
-                >
-                  <Ionicons name="trash" size={20} color="#FF3B30" />
-                  <Text style={[styles.quickActionText, { color: textColor }]}>Clear All</Text>
-                </TouchableOpacity>
-              </View>
-            </Animated.View>
           </>
         )}
       </View>
@@ -313,65 +261,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  headerWrapper: {
-    zIndex: 10,
-  },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 30,
-    paddingHorizontal: 25,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 20,
-  },
-  backButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
   emptyButton: {
     padding: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  appTitle: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: '#fff',
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
+    borderRadius: 8,
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 4,
   },
   statCard: {
     flex: 1,
-    marginHorizontal: 6,
-    padding: 16,
-    borderRadius: 20,
+    marginHorizontal: 4,
+    padding: 14,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   statNumber: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#fff',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#9CA3AF',
     fontWeight: '600',
   },
   content: {
@@ -386,14 +302,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 16,
     paddingBottom: 100,
   },
-  loadingSpinner: {
-    marginBottom: 20,
-  },
   loadingText: {
-    fontSize: 16,
-    opacity: 0.7,
+    fontSize: 15,
+    opacity: 0.5,
   },
   emptyState: {
     flex: 1,
@@ -416,38 +330,11 @@ const styles = StyleSheet.create({
   primaryButton: {
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 25,
+    borderRadius: 8,
   },
   primaryButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
-  },
-  quickActions: {
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  quickActionsTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  quickActionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  quickActionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginHorizontal: 6,
-  },
-  quickActionText: {
-    marginLeft: 8,
-    fontWeight: '500',
   },
 });

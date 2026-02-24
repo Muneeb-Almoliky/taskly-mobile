@@ -1,7 +1,6 @@
 import { Task } from '@/constants/types';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import TaskItem from './task-item';
@@ -12,7 +11,7 @@ interface TaskListProps {
   onToggleStar: (taskId: string) => void;
   onToggleArchive: (taskId: string) => void;
   onDeleteTask: (taskId: string) => void;
-  onEditTask?: (taskId: string, newTitle: string) => Promise<void>;
+  onEditTask?: (taskId: string, newTitle: string, dueDate?: Date | null) => Promise<void>;
 }
 
 export default function TaskList({ 
@@ -30,16 +29,18 @@ export default function TaskList({
 
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState<string>('');
+  const [editingDueDate, setEditingDueDate] = useState<Date | null>(null);
 
   const startEdit = (task: Task) => {
     setEditingTaskId(task.id);
     setEditingText(task.title);
+    setEditingDueDate(task.due_date ? new Date(task.due_date) : null);
   };
 
   const saveEdit = async (taskId: string) => {
     if (editingText.trim()) {
       try {
-        await onEditTask!(taskId, editingText);
+        await onEditTask!(taskId, editingText, editingDueDate);
         console.log("Edit successful");
       } catch (error) {
         console.error("Edit failed:", error);
@@ -48,27 +49,24 @@ export default function TaskList({
     }
     setEditingTaskId(null);
     setEditingText('');
+    setEditingDueDate(null);
   };
 
   const cancelEdit = () => {
     setEditingTaskId(null);
     setEditingText('');
+    setEditingDueDate(null);
   };
 
   if (tasks.length === 0) {
     return (
       <View style={styles.emptyState}>
-        <LinearGradient
-          colors={['rgba(99, 102, 241, 0.1)', 'rgba(168, 85, 247, 0.1)']}
-          style={styles.emptyGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <Ionicons name="checkmark-done-circle" size={60} color={tintColor} />
+        <View style={[styles.emptyGradient, { backgroundColor: cardColor, borderColor: borderColor, borderWidth: 1 }]}>
+          <Ionicons name="checkmark-done-circle" size={48} color={tintColor} />
           <Text style={[styles.emptyText, { color: textColor }]}>
             No tasks yet. Add your first task to get started!
           </Text>
-        </LinearGradient>
+        </View>
       </View>
     );
   }
@@ -82,7 +80,9 @@ export default function TaskList({
           index={index}
           isEditing={editingTaskId === task.id}
           editingText={editingText}
+          editingDueDate={editingDueDate}
           onEditTextChange={setEditingText}
+          onEditDueDateChange={setEditingDueDate}
           onStartEdit={() => startEdit(task)}
           onSaveEdit={() => saveEdit(task.id)}
           onCancelEdit={cancelEdit}
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 40,
-    borderRadius: 20,
+    borderRadius: 8,
     width: '100%',
   },
   emptyText: {

@@ -1,25 +1,25 @@
-import { useState, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Alert,
-  Animated,
-  Easing,
-  Dimensions,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import Header from '@/components/Header';
 import { CreateTaskData } from '@/constants/types';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { createTask } from '@/services/taskService';
+import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useRouter } from 'expo-router';
+import { useRef, useState } from 'react';
+import {
+    Alert,
+    Animated,
+    Dimensions,
+    Easing,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -136,52 +136,13 @@ export default function AddTask() {
       style={[styles.container, { backgroundColor }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      {/* Header with Gradient - Cleaner version for Add Task */}
-      <Animated.View 
-        style={[
-          styles.headerWrapper,
-          { transform: [{ scale: headerScale }] }
-        ]}
-      >
-        <LinearGradient
-          colors={[tintColor, '#7C3AED']}
-          style={styles.header}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-        >
-          <View style={styles.headerTop}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color="#fff" />
-            </TouchableOpacity>
-            <View style={styles.headerCenter}>
-              <Text style={styles.appTitle}>Taskly</Text>
-              <Text style={styles.headerSubtitle}>Create New Task</Text>
-            </View>
-            <View style={styles.placeholder} />
-          </View>
-          
-          {/* Feature Icons instead of stats */}
-          <Animated.View 
-            style={[
-              styles.featuresContainer, 
-              { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
-            ]}
-          >
-            <View style={styles.featureItem}>
-              <Ionicons name="create-outline" size={20} color="#fff" />
-              <Text style={styles.featureText}>Quick Create</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Ionicons name="flash-outline" size={20} color="#fff" />
-              <Text style={styles.featureText}>Easy Setup</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Ionicons name="options-outline" size={20} color="#fff" />
-              <Text style={styles.featureText}>Flexible Options</Text>
-            </View>
-          </Animated.View>
-        </LinearGradient>
-      </Animated.View>
+      {/* Universal Header */}
+      <Header
+        title="New Task"
+        subtitle="Create New Task"
+        showBackButton={false}
+      />
+
 
       <ScrollView 
         style={styles.scrollView}
@@ -195,15 +156,6 @@ export default function AddTask() {
           ]}
           onLayout={animateHeader}
         >
-          <View style={styles.welcomeSection}>
-            <Text style={[styles.welcomeTitle, { color: textColor }]}>
-              What's on your mind?
-            </Text>
-            <Text style={[styles.welcomeSubtitle, { color: textColor }]}>
-              Add a task to get started with your productivity journey
-            </Text>
-          </View>
-
           {/* Task Input */}
           <View style={styles.inputContainer}>
             <Text style={[styles.inputLabel, { color: textColor }]}>Task Title</Text>
@@ -355,58 +307,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  headerWrapper: {
-    zIndex: 10,
-  },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 25,
-    paddingHorizontal: 25,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  headerCenter: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  backButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  placeholder: {
-    width: 40,
-  },
-  appTitle: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
-  featuresContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  featureItem: {
-    alignItems: 'center',
-  },
-  featureText: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginTop: 4,
-    fontWeight: '500',
-  },
   scrollView: {
     flex: 1,
   },
@@ -417,21 +317,6 @@ const styles = StyleSheet.create({
   formContainer: {
     flex: 1,
   },
-  welcomeSection: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  welcomeTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  welcomeSubtitle: {
-    fontSize: 16,
-    opacity: 0.7,
-    textAlign: 'center',
-  },
   inputContainer: {
     marginBottom: 24,
   },
@@ -441,7 +326,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   taskInput: {
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     padding: 16,
     fontSize: 16,
@@ -461,7 +346,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     marginBottom: 12,
   },
@@ -491,8 +376,8 @@ const styles = StyleSheet.create({
     transform: [{ translateX: 22 }],
   },
   addButton: {
-    padding: 18,
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 8,
     marginBottom: 32,
   },
   loadingContainer: {
@@ -534,7 +419,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     marginBottom: 12,
   },
