@@ -65,6 +65,7 @@ export default function Signup() {
             { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
           ]}
         >
+          <Text style={[styles.appName, { color: tintColor }]}>Taskly</Text>
           <Text style={[styles.title, { color: textColor }]}>Create Account</Text>
           <Text style={[styles.subtitle, { color: textColor }]}>
             Sign up to start organizing your tasks
@@ -136,6 +137,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 24,
     borderWidth: 1,
+  },
+  appName: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 2,
   },
   title: {
     fontSize: 28,
