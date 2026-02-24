@@ -7,6 +7,7 @@ import TaskItem from './task-item';
 
 interface TaskListProps {
   tasks: Task[];
+  searchQuery?: string;
   onToggleTask: (taskId: string) => void;
   onToggleStar: (taskId: string) => void;
   onToggleArchive: (taskId: string) => void;
@@ -16,6 +17,7 @@ interface TaskListProps {
 
 export default function TaskList({ 
   tasks, 
+  searchQuery = '',
   onToggleTask, 
   onToggleStar, 
   onToggleArchive,
@@ -59,6 +61,22 @@ export default function TaskList({
   };
 
   if (tasks.length === 0) {
+    if (searchQuery.trim() !== '') {
+      return (
+        <View style={styles.emptyState}>
+          <View style={[styles.emptyGradient, { backgroundColor: cardColor, borderColor: borderColor, borderWidth: 1 }]}>
+            <Ionicons name="search-outline" size={48} color="#9CA3AF" />
+            <Text style={[styles.emptyText, { color: textColor }]}>
+              No tasks match "{searchQuery}"
+            </Text>
+            <Text style={styles.emptySubtext}>
+              Try a different keyword or clear your search
+            </Text>
+          </View>
+        </View>
+      );
+    }
+
     return (
       <View style={styles.emptyState}>
         <View style={[styles.emptyGradient, { backgroundColor: cardColor, borderColor: borderColor, borderWidth: 1 }]}>
@@ -122,5 +140,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     opacity: 0.7,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    marginTop: 8,
   },
 });

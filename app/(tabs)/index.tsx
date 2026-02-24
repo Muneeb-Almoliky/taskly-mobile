@@ -1,4 +1,5 @@
 import Header from '@/components/Header';
+import SearchBar from '@/components/SearchBar';
 import TaskList from '@/components/task-list';
 import { Task, TaskStatus } from '@/constants/types';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -34,6 +35,7 @@ export default function Tasks() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState(TaskStatus.ALL);
+  const [searchQuery, setSearchQuery] = useState('');
   const [userName, setUserName] = useState('');
   const router = useRouter();
   
@@ -175,6 +177,14 @@ export default function Tasks() {
   };
 
   const filteredTasks = tasks.filter(task => {
+    // 1. Check Search Query
+    if (searchQuery.trim() !== '') {
+      if (!task.title.toLowerCase().includes(searchQuery.toLowerCase().trim())) {
+        return false;
+      }
+    }
+
+    // 2. Check Status Filters
     if (activeFilter === TaskStatus.ACTIVE) return !task.completion_status && !task.archived_status;
     if (activeFilter === TaskStatus.COMPLETED) return task.completion_status && !task.archived_status;
     if (activeFilter === TaskStatus.ARCHIVED) return task.archived_status;
@@ -210,6 +220,14 @@ export default function Tasks() {
         title="Tasks"
         subtitle={`Let's get things done, ${userName}`}
       />
+
+      {/* Global Search */}
+      <View style={styles.searchContainer}>
+        <SearchBar 
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
 
       {/* Progress Bar */}
       <View style={styles.progressContainer}>
@@ -294,6 +312,7 @@ export default function Tasks() {
         >
           <TaskList
             tasks={filteredTasks}
+            searchQuery={searchQuery}
             onToggleTask={handleToggleTask}
             onToggleStar={handleToggleStar}
             onToggleArchive={handleToggleArchive}
@@ -309,6 +328,11 @@ export default function Tasks() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  searchContainer: {
+    paddingHorizontal: 20,
+    marginTop: 8,
+    marginBottom: 4,
   },
   progressContainer: {
     paddingHorizontal: 20,
