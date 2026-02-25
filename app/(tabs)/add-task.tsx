@@ -15,6 +15,7 @@ import {
     Platform,
     ScrollView,
     StyleSheet,
+    Switch,
     Text,
     TextInput,
     TouchableOpacity,
@@ -156,63 +157,85 @@ export default function AddTask() {
           ]}
           onLayout={animateHeader}
         >
-          {/* Task Input */}
+          {/* Task Input Canvas */}
           <View style={styles.inputContainer}>
-            <Text style={[styles.inputLabel, { color: textColor }]}>Task Title</Text>
             <TextInput
-              style={[styles.taskInput, { backgroundColor: cardColor, color: textColor, borderColor }]}
+              style={[styles.taskInput, { color: textColor }]}
               placeholder="What needs to be done?"
               placeholderTextColor="#9CA3AF"
               value={taskTitle}
               onChangeText={setTaskTitle}
               multiline={true}
-              numberOfLines={3}
               textAlignVertical="top"
               autoFocus={true}
             />
           </View>
 
+          {/* Quick Actions (Pills) */}
+          <View style={styles.quickActions}>
+            <Text style={[styles.sectionTitle, { color: textColor }]}>Suggested</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsScroll}>
+              {[
+                { label: 'Review', icon: 'document-text', important: true, text: 'Review project documents and provide feedback' },
+                { label: 'Call', icon: 'call', important: false, text: 'Call client for project update discussion' },
+                { label: 'Email', icon: 'mail', important: false, text: 'Email team with weekly status report' },
+                { label: 'Meeting', icon: 'people', important: true, text: 'Prepare agenda and materials for team meeting' }
+              ].map((template, i) => (
+                <TouchableOpacity 
+                  key={i}
+                  style={[styles.quickActionMatch, { backgroundColor: cardColor, borderColor }]}
+                  onPress={() => {
+                    setTaskTitle(template.text);
+                    setIsImportant(template.important);
+                  }}
+                >
+                  <Ionicons name={template.icon as any} size={16} color={tintColor} />
+                  <Text style={[styles.quickActionTextMatch, { color: textColor }]}>{template.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
           {/* Options */}
           <View style={styles.optionsContainer}>
-            <Text style={[styles.optionsTitle, { color: textColor }]}>Task Options</Text>
             
-            {/* Important Toggle */}
-            <TouchableOpacity 
-              style={[styles.optionItem, { backgroundColor: cardColor, borderColor }]}
-              onPress={() => setIsImportant(!isImportant)}
-            >
-              <View style={styles.optionLeft}>
-                <Ionicons 
-                  name={isImportant ? "star" : "star-outline"} 
-                  size={24} 
-                  color={isImportant ? tintColor : textColor} 
-                />
-                <Text style={[styles.optionText, { color: textColor }]}>Mark as Important</Text>
-              </View>
-              <View style={[
-                styles.toggle, 
-                isImportant && { backgroundColor: tintColor }
-              ]}>
-                <View style={[
-                  styles.toggleKnob, 
-                  isImportant && styles.toggleKnobActive
-                ]} />
-              </View>
-            </TouchableOpacity>
-
             {/* Due Date Picker */}
             <TouchableOpacity 
-              style={[styles.optionItem, { backgroundColor: cardColor, borderColor }]}
+              style={[styles.optionItem, { backgroundColor: cardColor, borderColor, borderBottomWidth: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }]}
               onPress={() => setShowDatePicker(true)}
             >
               <View style={styles.optionLeft}>
-                <Ionicons name="calendar-outline" size={24} color={textColor} />
+                <View style={[styles.iconContainer, { backgroundColor: `${tintColor}20` }]}>
+                  <Ionicons name="calendar" size={20} color={tintColor} />
+                </View>
                 <Text style={[styles.optionText, { color: textColor }]}>
                   {dueDate ? `Due: ${formatDate(dueDate)}` : 'Set Due Date'}
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={textColor} />
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
             </TouchableOpacity>
+
+            {/* Important Toggle */}
+            <View 
+              style={[styles.optionItem, { backgroundColor: cardColor, borderColor, borderTopLeftRadius: 0, borderTopRightRadius: 0 }]}
+            >
+              <View style={styles.optionLeft}>
+                <View style={[styles.iconContainer, { backgroundColor: isImportant ? `${tintColor}20` : '#F3F4F6' }]}>
+                  <Ionicons 
+                    name="star" 
+                    size={20} 
+                    color={isImportant ? tintColor : '#9CA3AF'} 
+                  />
+                </View>
+                <Text style={[styles.optionText, { color: textColor }]}>Mark as Important</Text>
+              </View>
+              <Switch
+                value={isImportant}
+                onValueChange={setIsImportant}
+                trackColor={{ false: "#E5E7EB", true: tintColor }}
+                thumbColor={isImportant ? "#fff" : "#fff"}
+              />
+            </View>
 
             {showDatePicker && (
               <DateTimePicker
@@ -245,58 +268,7 @@ export default function AddTask() {
             </TouchableOpacity>
           </Animated.View>
 
-          {/* Quick Actions */}
-          <View style={styles.quickActions}>
-            <Text style={[styles.quickActionsTitle, { color: textColor }]}>Quick Templates</Text>
-            <Text style={[styles.quickActionsSubtitle, { color: textColor }]}>
-              Tap to quickly fill common task types
-            </Text>
-            <View style={styles.quickActionsGrid}>
-              <TouchableOpacity 
-                style={[styles.quickAction, { backgroundColor: cardColor, borderColor }]}
-                onPress={() => {
-                  setTaskTitle('Review project documents and provide feedback');
-                  setIsImportant(true);
-                }}
-              >
-                <Ionicons name="document-text" size={20} color={tintColor} />
-                <Text style={[styles.quickActionText, { color: textColor }]}>Review</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.quickAction, { backgroundColor: cardColor, borderColor }]}
-                onPress={() => {
-                  setTaskTitle('Call client for project update discussion');
-                  setIsImportant(false);
-                }}
-              >
-                <Ionicons name="call" size={20} color={tintColor} />
-                <Text style={[styles.quickActionText, { color: textColor }]}>Call</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.quickAction, { backgroundColor: cardColor, borderColor }]}
-                onPress={() => {
-                  setTaskTitle('Email team with weekly status report');
-                  setIsImportant(false);
-                }}
-              >
-                <Ionicons name="mail" size={20} color={tintColor} />
-                <Text style={[styles.quickActionText, { color: textColor }]}>Email</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.quickAction, { backgroundColor: cardColor, borderColor }]}
-                onPress={() => {
-                  setTaskTitle('Prepare agenda and materials for team meeting');
-                  setIsImportant(true);
-                }}
-              >
-                <Ionicons name="people" size={20} color={tintColor} />
-                <Text style={[styles.quickActionText, { color: textColor }]}>Meeting</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          {/* Picker Modal acts immediately below the options container */}
         </Animated.View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -318,62 +290,53 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   inputContainer: {
-    marginBottom: 24,
-  },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 16,
+    paddingTop: 10,
   },
   taskInput: {
-    borderRadius: 8,
-    borderWidth: 1,
-    padding: 16,
+    fontSize: 26,
+    fontWeight: '300',
+    minHeight: 120,
+    maxHeight: 250,
+  },
+  sectionTitle: {
     fontSize: 16,
-    minHeight: 100,
-    textAlignVertical: 'top',
+    fontWeight: '600',
+    marginBottom: 12,
+    marginLeft: 4,
   },
   optionsContainer: {
     marginBottom: 32,
-  },
-  optionsTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
+    marginHorizontal: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   optionItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
-    marginBottom: 12,
   },
   optionLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  iconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   optionText: {
-    marginLeft: 12,
+    marginLeft: 14,
     fontSize: 16,
-  },
-  toggle: {
-    width: 50,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#E5E7EB',
-    padding: 2,
-  },
-  toggleKnob: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'white',
-    transform: [{ translateX: 0 }],
-  },
-  toggleKnobActive: {
-    transform: [{ translateX: 22 }],
+    fontWeight: '500',
   },
   addButton: {
     padding: 16,
@@ -397,34 +360,28 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   quickActions: {
-    marginBottom: 20,
+    marginBottom: 32,
   },
-  quickActionsTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 4,
+  quickActionsScroll: {
+    paddingHorizontal: 4,
+    paddingVertical: 8,
   },
-  quickActionsSubtitle: {
-    fontSize: 14,
-    opacity: 0.7,
-    marginBottom: 16,
-  },
-  quickActionsGrid: {
+  quickActionMatch: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  quickAction: {
-    width: (width - 60) / 2,
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
     borderWidth: 1,
-    marginBottom: 12,
+    marginRight: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  quickActionText: {
-    marginTop: 8,
+  quickActionTextMatch: {
+    marginLeft: 8,
     fontSize: 14,
     fontWeight: '500',
   },
