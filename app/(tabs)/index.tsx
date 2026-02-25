@@ -218,6 +218,7 @@ export default function Tasks() {
         {/* Tasks List */}
         <ScrollView 
           style={styles.taskListContainer}
+          contentContainerStyle={{ paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl

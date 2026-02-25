@@ -133,12 +133,13 @@ export default function AddTask() {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={[styles.container, { backgroundColor }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      {/* Universal Header */}
-      <Header
+    <View style={[styles.container, { backgroundColor }]}>
+      <KeyboardAvoidingView 
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        {/* Universal Header */}
+        <Header
         title="New Task"
         subtitle="Create New Task"
         showBackButton={false}
@@ -271,7 +272,8 @@ export default function AddTask() {
           {/* Picker Modal acts immediately below the options container */}
         </Animated.View>
       </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -285,6 +287,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     padding: 20,
+    paddingBottom: 110,
   },
   formContainer: {
     flex: 1,

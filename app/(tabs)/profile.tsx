@@ -217,6 +217,7 @@ export default function Profile() {
       {/* Main Content */}
       <ScrollView 
         style={styles.content}
+        contentContainerStyle={{ paddingBottom: 110 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Profile Picture Section */}

@@ -6,16 +6,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import {
-  Alert,
-  Animated,
-  Dimensions,
-  Easing,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Alert,
+    Animated,
+    Dimensions,
+    Easing,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -197,6 +197,7 @@ export default function Archived() {
             {/* Tasks List */}
             <ScrollView 
               style={styles.taskListContainer}
+              contentContainerStyle={{ paddingBottom: 110 }}
               showsVerticalScrollIndicator={false}
               refreshControl={
                 <RefreshControl
