@@ -7,7 +7,7 @@ export interface Task{
     starred_status: boolean;
     completion_status: boolean;
     archived_status: boolean;
-    due_date?: Date | null;
+    due_date?: string | null;
 }
 
 export enum TaskStatus {

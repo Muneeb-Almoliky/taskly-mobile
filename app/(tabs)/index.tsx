@@ -1,22 +1,14 @@
 import Header from '@/components/Header';
 import SearchBar from '@/components/SearchBar';
 import TaskList from '@/components/task-list';
-import { Task, TaskStatus } from '@/constants/types';
+import { TaskStatus } from '@/constants/types';
+import { useTaskContext } from '@/context/TaskContext';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { getEmail } from '@/services/authService';
-import {
-    deleteTask,
-    getTasks,
-    toggleArchiveTask,
-    toggleTaskCompletion,
-    toggleTaskStar,
-    updateTask
-} from '@/services/taskService';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
-    Alert,
     Animated,
     Dimensions,
     Easing,
@@ -31,9 +23,18 @@ import {
 const { width } = Dimensions.get('window');
 
 export default function Tasks() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const { 
+    tasks, 
+    loading, 
+    refreshing, 
+    onRefresh, 
+    handleToggleTask, 
+    handleToggleStar, 
+    handleToggleArchive, 
+    handleDeleteTask, 
+    handleEditTask 
+  } = useTaskContext();
+  
   const [activeFilter, setActiveFilter] = useState(TaskStatus.ALL);
   const [searchQuery, setSearchQuery] = useState('');
   const [userName, setUserName] = useState('');
@@ -51,7 +52,6 @@ export default function Tasks() {
   const headerScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    loadTasks();
     loadUserInfo();
     animateHeader();
   }, []);
@@ -92,88 +92,6 @@ export default function Tasks() {
         useNativeDriver: true,
       }),
     ]).start();
-  };
-
-  const loadTasks = async () => {
-    try {
-      const userTasks = await getTasks();
-      setTasks(userTasks);
-    } catch (error) {
-      console.error('Error loading tasks:', error);
-      Alert.alert('Error', 'Failed to load tasks');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadTasks();
-  };
-
-  const handleToggleTask = async (taskId: string) => {
-    try {
-      const task = tasks.find(t => t.id === taskId);
-      const updatedTask = await toggleTaskCompletion(taskId, !task?.completion_status);
-      loadTasks();
-    } catch (error) {
-      console.error('Error toggling task:', error);
-      Alert.alert('Error', 'Failed to update task');
-    }
-  };
-
-  const handleToggleStar = async (taskId: string) => {
-    try {
-      const task = tasks.find(t => t.id === taskId);
-      const updatedTask = await toggleTaskStar(taskId, !task?.starred_status);
-      loadTasks();
-    } catch (error) {
-      console.error('Error toggling star:', error);
-      Alert.alert('Error', 'Failed to update task');
-    }
-  };
-
-  const handleToggleArchive = async (taskId: string) => {
-    try {
-      const task = tasks.find(t => t.id === taskId);
-      const updatedTask = await toggleArchiveTask(taskId, !task?.archived_status);
-      loadTasks();
-    } catch (error) {
-      console.error('Error toggling archive:', error);
-      Alert.alert('Error', 'Failed to update task');
-    }
-  };
-
-  const handleDeleteTask = async (taskId: string) => {
-    // First animate the task removal
-    setTasks(tasks.filter(t => t.id !== taskId));
-    
-    try {
-      await deleteTask(taskId);
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      Alert.alert('Error', 'Failed to delete task');
-      // Reload tasks if deletion failed
-      loadTasks();
-    }
-  };
-
-  const handleEditTask = async (taskId: string, newTitle: string, dueDate?: Date | null) => {
-    try {
-      // Update local state immediately for better UX
-      setTasks(tasks.map(t => 
-        t.id === taskId ? { ...t, title: newTitle, due_date: dueDate !== undefined ? dueDate : t.due_date } : t
-      ));
-      
-      // Then call the API
-      await updateTask(taskId, newTitle, dueDate);
-    } catch (error) {
-      console.error('Error editing task:', error);
-      Alert.alert('Error', 'Failed to update task');
-      // Revert local state if API call fails
-      loadTasks();
-    }
   };
 
   const filteredTasks = tasks.filter(task => {

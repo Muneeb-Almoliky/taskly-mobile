@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
+import { TaskProvider } from '@/context/TaskContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -92,7 +93,9 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <NavigationWrapper />
+      <TaskProvider>
+        <NavigationWrapper />
+      </TaskProvider>
     </ThemeProvider>
   );
 }

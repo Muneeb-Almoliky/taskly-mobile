@@ -1,35 +1,38 @@
 import Header from '@/components/Header';
 import TaskList from '@/components/task-list';
-import { Task } from '@/constants/types';
+import { useTaskContext } from '@/context/TaskContext';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import {
-    deleteTask,
-    getTasks,
-    toggleArchiveTask
-} from '@/services/taskService';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import {
-    Alert,
-    Animated,
-    Dimensions,
-    Easing,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Alert,
+  Animated,
+  Dimensions,
+  Easing,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
 export default function Archived() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [archivedTasks, setArchivedTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const { 
+    tasks, 
+    loading, 
+    refreshing, 
+    onRefresh, 
+    handleToggleArchive, 
+    handleDeleteTask,
+    handleEditTask
+  } = useTaskContext();
+  
+  const archivedTasks = tasks.filter(task => task.archived_status);
+  
   const router = useRouter();
   
   const textColor = useThemeColor({}, 'text');
@@ -44,7 +47,6 @@ export default function Archived() {
   const headerScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    loadTasks();
     animateHeader();
   }, []);
 
@@ -70,32 +72,12 @@ export default function Archived() {
     ]).start();
   };
 
-  const loadTasks = async () => {
-    try {
-      const userTasks = await getTasks();
-      setTasks(userTasks);
-      // Filter only archived tasks
-      setArchivedTasks(userTasks.filter((task: Task) => task.archived_status));
-    } catch (error) {
-      console.error('Error loading tasks:', error);
-      Alert.alert('Error', 'Failed to load tasks');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadTasks();
-  };
-
+  // handleUnarchive uses the context action (just reversing the status)
   const handleUnarchiveTask = async (taskId: string) => {
     try {
-      const updatedTask = await toggleArchiveTask(taskId, false);
-      loadTasks();
+      await handleToggleArchive(taskId);
       
-      // Success animation
+      // Success animation on header
       Animated.sequence([
         Animated.timing(headerScale, {
           toValue: 1.05,
@@ -110,21 +92,6 @@ export default function Archived() {
       ]).start();
     } catch (error) {
       console.error('Error unarchiving task:', error);
-      Alert.alert('Error', 'Failed to unarchive task');
-    }
-  };
-
-  const handleDeleteTask = async (taskId: string) => {
-    // First animate the task removal
-    setArchivedTasks(archivedTasks.filter(t => t.id !== taskId));
-    
-    try {
-      await deleteTask(taskId);
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      Alert.alert('Error', 'Failed to delete task');
-      // Reload tasks if deletion failed
-      loadTasks();
     }
   };
 
@@ -139,14 +106,12 @@ export default function Archived() {
           style: 'destructive',
           onPress: async () => {
             try {
-              // Delete all archived tasks
-              const deletePromises = archivedTasks.map(task => deleteTask(task.id));
+              // Delete all archived tasks utilizing the context's deletion logic
+              const deletePromises = archivedTasks.map(task => handleDeleteTask(task.id));
               await Promise.all(deletePromises);
-              setArchivedTasks([]);
             } catch (error) {
               console.error('Error deleting all tasks:', error);
               Alert.alert('Error', 'Failed to delete all tasks');
-              loadTasks();
             }
           }
         },
@@ -248,6 +213,7 @@ export default function Archived() {
                 onDeleteTask={handleDeleteTask}
                 onToggleStar={() => {}}
                 onToggleTask={() => {}}
+                onEditTask={handleEditTask}
               />
             </ScrollView>
           </>
