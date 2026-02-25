@@ -121,7 +121,7 @@ export default function Profile() {
 
       // Launch image picker
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
@@ -156,7 +156,10 @@ export default function Profile() {
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        await uploadImage(result.assets[0].uri);
+        const asset = result.assets[0];
+        const originalName = asset.fileName || asset.uri.split("/").pop() || `camera_${Date.now()}.jpg`;
+        await uploadProfilePicture(userEmail, asset.uri, originalName);
+        setProfileImage(asset.uri);
       }
     } catch (error) {
       console.error('Error taking photo:', error);
