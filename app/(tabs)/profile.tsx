@@ -1,4 +1,5 @@
 import Header from '@/components/Header';
+import { useThemeContext } from '@/context/ThemeContext';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { getEmail, logout } from '@/services/authService';
 import { getProfilePicture, uploadProfilePicture } from '@/services/userService';
@@ -27,10 +28,10 @@ export default function Profile() {
   const [userName, setUserName] = useState(''); 
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  
+  const { theme, setTheme } = useThemeContext();
+
   const textColor = useThemeColor({}, 'text');
   const tintColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
@@ -293,7 +294,6 @@ export default function Profile() {
               thumbColor={notificationsEnabled ? "#fff" : "#f4f3f4"}
             />
           </View>
-          
           <View style={[styles.settingItem, { backgroundColor: cardColor, borderColor }]}>
             <View style={styles.settingInfo}>
               <Ionicons name="moon" size={24} color={tintColor} />
@@ -305,12 +305,11 @@ export default function Profile() {
               </View>
             </View>
 
-            {/* TODO: Connect this Switch to the ThemeProvider so it toggles dark/light mode */}
             <Switch
-              value={darkModeEnabled}
-              onValueChange={setDarkModeEnabled}
+              value={theme === 'dark'}
+              onValueChange={(val) => setTheme(val ? 'dark' : 'light')}
               trackColor={{ false: "#767577", true: tintColor }}
-              thumbColor={darkModeEnabled ? "#fff" : "#f4f3f4"}
+              thumbColor={theme === 'dark' ? "#fff" : "#f4f3f4"}
             />
           </View>
           

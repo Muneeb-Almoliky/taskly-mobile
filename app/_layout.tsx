@@ -1,8 +1,9 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
+import { ThemeProvider } from '@/context/ThemeContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export const unstable_settings = {
@@ -20,8 +21,23 @@ import { getEmail } from '@/services/authService';
 import { useRouter, useSegments } from 'expo-router';
 import { useEffect, useState } from 'react';
 
-export default function RootLayout() {
+// A separate component to consume the Context once mounted
+function NavigationWrapper() {
   const colorScheme = useColorScheme();
+
+  return (
+    <NavThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Stack>
+        {screens.map((screen) => (
+          <Stack.Screen key={screen.name} {...screen} />
+        ))}
+      </Stack>
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+    </NavThemeProvider>
+  );
+}
+
+export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
   const [isReady, setIsReady] = useState(false);
@@ -75,13 +91,8 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        {screens.map((screen) => (
-          <Stack.Screen key={screen.name} {...screen} />
-        ))}
-      </Stack>
-      <StatusBar style="auto" />
+    <ThemeProvider>
+      <NavigationWrapper />
     </ThemeProvider>
   );
 }
